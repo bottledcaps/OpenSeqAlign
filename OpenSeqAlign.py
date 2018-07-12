@@ -1,7 +1,38 @@
 class OpenSeqAlign:
-	def default_gap_penalty(open_penalty=10, extend_penalty = 1): 
+	def aligned_reads():
+		def __init__(self, reference_string):
+			self.ref_seq = reference_string
+			self.encoded_reads = []
+		def __repr__(self):
+			print("query:", self.ref_seq)
+			for encoded_read in self.encoded_reads:
+				print("read: ", encoded_read)
+
+		def add_read(aligned_read):
+			def encoded_aligned_read():
+				def __init__(self, aligned_read):
+					total_length = len(refernece_string)
+					self.read_start_loc = None
+					self.ref_start_loc = None
+					self.dict = {}
+					self.seq = ''
+					for index in range(total_length):
+						#recording when reference and/or read stop being = signs
+						if self.read_start_loc = None:
+							if aligned_read[index] != '=':
+								self.read_start_loc = index
+						if self.ref_start_loc = None:
+							if reference_string[index] != '='
+								self.ref_start_loc = index
+						if self.read_start_loc != None:
+							aligned_read[index]
+
+			self.reads.append(encoded_aligned_read(aligned_read))
+
+
+	def create_gap_penalty(open_penalty=10, extend_penalty = 1): 
 		"""the default gap penalty calculation, always outputs positive values
-		to use a different gap penalty, pass a different gap_penalty function into needleman_wunsch
+		to use a different gap penalty, pass a different gap_penalty function into nwalign / heur_nwalign / swalign
 		default_gap_penalty returns a penalty function of the form penalty = open_penalty + extend_penalty*(length-1) where length is an input
 		"""
 
@@ -11,14 +42,19 @@ class OpenSeqAlign:
 			return open_penalty + extend_penalty*(length-1)
 		return gap_penalty
 	
-	def nwalign(string1, string2, no_end_gap_penalty = True, match_score = 1, mismatch_score = -1, gap_penalty = default_gap_penalty()):
+	def nwalign(string1, string2, no_end_gap_penalty = True, match_score = 1, mismatch_score = -1, gap_penalty = create_gap_penalty()):
 		"""Aligns 2 strings, string1 and string2. Default values can be modified by passing in different values.
 		This needleman_wunsch implementation does not penalize gaps at the beginning and ends, by default. 
-		For example, the following strings align as shown since gaps at the beginning and end do not count against the alignment by default.
-		>>>nwalign('GATTACA', 'GCATGCU')
+		For example, the first input strings align as shown since gaps at the beginning and end do not count against the alignment by default.
+		>>> from OpenSeqAlign import *
+		>>> OpenSeqAlign.nwalign('GATTACA', 'GCATGCU')
 		('GATTACA====', '====GCATGCU')
+		>>> OpenSeqAlign.nwalign('GATTACA', 'GCATGCU', no_end_gap_penalty = False, gap_penalty = lambda x: x)
+		('G=ATTACA', 'GCA=TGCU')
 		"""
 		def create_path_grid():
+			length1 = len(string1)
+			length2 = len(string2)
 			def init_grid(value, y_length = len(string2) + 1, x_length = len(string2) + 1):
 				a = []
 				for _ in range(y_length):
@@ -32,16 +68,13 @@ class OpenSeqAlign:
 				for x in range(x_length):
 					if no_end_gap_penalty:
 						a[0][x] = 0
-					"""removes starting gap penalties
-					to keep starting gap penalties set g[0][x] to be gap_penalty(x)
-					"""
 					else:
-						a[0][x] = gap_penalty(x)
+						a[0][x] = -gap_penalty(x)
 				for y in range(y_length):
 					if no_end_gap_penalty:
-						a[0][x] = 0
+						a[y][0] = 0
 					else:
-						a[y][0] = gap_penalty(y)
+						a[y][0] = -gap_penalty(y)
 				return a
 			def init_path_grid(y_length = len(string2) + 1, x_length = len(string2) + 1	):
 				a = init_grid(None)
@@ -142,7 +175,7 @@ class OpenSeqAlign:
 		new_string1, new_string2 = traceback()
 		return new_string1, new_string2
 
-	def heur_nwalign(string1, string2, max_displacement, match_score = 1, mismatch_score = -1, gap_penalty = default_gap_penalty()):
+	def heur_nwalign(string1, string2, max_displacement, match_score = 1, mismatch_score = -1, gap_penalty = create_gap_penalty()):
 		def get_indexes(row_number, x_loc): #converts from diagonal matrix to string indexes
 			if (x_loc - max_displacement) < 0:
 				first = row_number - 1
@@ -223,10 +256,10 @@ class OpenSeqAlign:
 					path_grid[row_number][x_loc] = score_path_dict[max_key]
 
 					return max_key		
-					for row in range(shorter_len):
-				for a in range(max_displacement+1):
-					scoring_matrix[row+1][max_displacement+a] = score(row+1, max_displacement + a)
-					scoring_matrix[row+1][max_displacement-a] = score(row+1, max_displacement - a)
+				for row in range(shorter_len):
+					for a in range(max_displacement+1):
+						scoring_matrix[row+1][max_displacement+a] = score(row+1, max_displacement + a)
+						scoring_matrix[row+1][max_displacement-a] = score(row+1, max_displacement - a)
 
 			scoring_matrix = init_scoring_grid()
 			path_matrix = init_path_grid()
@@ -238,8 +271,8 @@ class OpenSeqAlign:
 			current_row = shorter_len
 			current_x_loc = max_displacement
 
-			while(path_grid[current_row][current_x_loc+length1_flag]!=None):
-				current_x_loc += length1_flag
+			while(path_grid[current_row][current_x_loc+length_flag]!=None):
+				current_x_loc += length_flag
 
 			current_string1_index, current_string2_index = get_indexes(current_row, current_x_loc)
 
@@ -266,101 +299,86 @@ class OpenSeqAlign:
 					current_row, current_x_loc = indexes_to_row_x(current_string1_index, current_string2_index)
 
 			return new_string1, new_string2
-	#initializations of values needed throughout program
-	length1 = len(string1)
-	length2 = len(string2)
-	length1_flag = -1
-	if length1 > length2:
-		longer_len = length1
-		shorter_len = length2
-		length1_flag = 1
-	else: 
-		longer_len = length2
-		shorter_len = length1
+		#initializations of values needed throughout program
+		length1 = len(string1)
+		length2 = len(string2)
+		length_flag = -1
+		if length1 > length2:
+			longer_len = length1
+			shorter_len = length2
+			length_flag = 1
+		else: 
+			longer_len = length2
+			shorter_len = length1
 
-	row_width = (max_displacement * 2) + 1
+		row_width = (max_displacement * 2) + 1
 
-	#function body / "doing stuff" 
-	path_grid = creat_heur_path_grid()
-	new_string1, new_string2 = traceback()
-	return new_string1, new_string2
+		#function body / "doing stuff" 
+		path_grid = create_heur_path_grid()
+		new_string1, new_string2 = traceback()
+		return new_string1, new_string2
 
-	def smith_waterman_align(string1, string2, match_score = 3, mismatch_score = -3):
+	def swalign(string1, string2, match_score = 3, mismatch_score = -3, gap_penalty = create_gap_penalty()):
 		#strings 1 and 2 are input strings, presumably genomes
-		#have to determine rules?
 		length1 = len(string1)
 		length2 = len(string2)
 		matrix_max = 0
 		x_max = None
 		y_max = None
-		def initialize_grid(value):
-		#given two strings, create blank scoring matrix with dimensions 1 greater than each
-			A = []
-			for _ in range(length2 + 1):
-				A.append([])
-			for x in range(length2 + 1):
-				for y in range(length1+1):
-					A[x].append(value)
-			return A
-		def print_grid(grid):
-			a = len(grid)
-			for x in range(a):
-				#if x != 0:
-				#	print(string2[x-1])
-				print(grid[x])
-		def sub_score(tf):
-			if tf:
-				return match_score
-			else:
-				return mismatch_score
-		def gap_penalty(length):
-			return length
-		def score(y_loc, x_loc):
-			#return x_loc + y_loc
-			nonlocal matrix_max, x_max, y_max
-			max_val = 0
+		def create_path_grid():
+			def init_grid(value):
+				a = []
+				for _ in range(length2 + 1):
+					a.append([])
+				for x in range(length2+1):
+					for y in range(length1 + 1):
+						a[x].append(value)
+				return a
+			def init_path_grid():
+				return init_grid(None)
+			def init_score_grid():
+				return init_grid(0)
+			def calc_matrices(): 
+				def score(y_loc, x_loc):
+					def subst_score(char1, char2):
+						if char1 == 'N' or char2 == 'N':
+							return match_score
+						elif char1 == char2:
+							return match_score
+						else:
+							return mismatch_score
+					def calc_gaps():
+						gap_dict = {}
+						#go up
+						k = 1
+						while y_loc - k >= 0:
+							gap_dict[score_grid[y_loc - k][x_loc] - gap_penalty(k)] = k
+							k += 1
+						j = 1
+						while y_loc - j >= 0:
+							gap_dict[score_grid[y_loc][x_loc - j] - gap_penalty(j)] = -j
+						return gap_dict
 
-			calc_sub = g[y_loc-1][x_loc-1] + sub_score((string1[x_loc-1] == string2[y_loc-1]))
-			calc_string1_gap = g[y_loc-1][x_loc] - 2
-			calc_string2_gap = g[y_loc][x_loc-1] - 2
-
-			subst = False
-			up = False
-			left = False
-
-
-			if calc_sub > max_val:
-				max_val = calc_sub
-				#path_x, path_y = x_loc - 1, y_loc - 1
-				subst = True
-
-			if calc_string1_gap > max_val:
-				max_val = calc_string1_gap
-				#path_x = x_loc
-				#path_y = y_loc-1
-				up = True
-
-			if calc_string2_gap > max_val:
-				max_val = calc_string2_gap
-				#path_x = x_loc-1
-				#path_y = y_loc
-				left = True
-
-			if max_val > matrix_max:
-				matrix_max = max_val
-				x_max = x_loc
-				y_max = y_loc
+					score_path_dict = calc_gaps()
+					calc_sub = scoring_matrix[y_loc - 1][x_loc - 1] + calc_subst(string1[x_loc-1], string2[y_loc-1])
+					score_path_dict[calc_sub] = 0
+					max_key = max(score_path_dict.keys)
+					if max_key > matrix_max:
+						matrix_max = max_key
+						x_max = x_loc
+						y_max = y_loc
+					if max_key > 0: 
+						path_grid[y_loc][x_loc] = score_path_dict[max_key]
+						score_grid[y_loc][x_loc] = max_key
 
 
-
-			if left:
-				path_grid[y_loc][x_loc] = -1
-			elif up:
-				path_grid[y_loc][x_loc] = 1
-			elif subst:
-				path_grid[y_loc][x_loc] = 0 
-
-			return max_val
+				for y in range(1, length2 + 1):
+					for x in range(1, length1 + 1):
+						score(y, x)
+			path_grid = init_path_grid()
+			score_grid = init_score_grid()
+			calc_matrices()
+			return path_grid()
 		def align_strings():
 			new_string1 = ''
 			new_string2 = ''
@@ -382,15 +400,7 @@ class OpenSeqAlign:
 					current_x -= 1
 			return new_string1, new_string2
 
-
-		g = initialize_grid(0)
-		path_grid = initialize_grid(None) #negative x means to the left by x, positive x means up by x, 0 means up, left
-
-
-		#x indexes spot in string 1, y indexes spot in string 2, [y+1][x+1] is current spot
-		for y in range(length2):
-			for x in range(length1):
-				g[y+1][x+1] = score(y+1, x+1)
-				
-		new_string1, new_string2 = align_strings()
+		path_grid = create_path_grid() #negative x means to the left by x, positive x means up by x, 0 means up, left
+		#x indexes spot in string 1, y indexes spot in string 2, [y+1][x+1] is current spot				
+		new_string1, new_string2 = traceback()
 		return new_string1, new_string2
