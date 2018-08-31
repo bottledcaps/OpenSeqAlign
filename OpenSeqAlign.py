@@ -1,33 +1,4 @@
 class OpenSeqAlign:
-	def aligned_reads():
-		def __init__(self, reference_string):
-			self.ref_seq = reference_string
-			self.encoded_reads = []
-		def __repr__(self):
-			print("query:", self.ref_seq)
-			for encoded_read in self.encoded_reads:
-				print("read: ", encoded_read)
-
-		def add_read(aligned_read):
-			def encoded_aligned_read():
-				def __init__(self, aligned_read):
-					total_length = len(refernece_string)
-					self.read_start_loc = None
-					self.ref_start_loc = None
-					self.dict = {}
-					self.seq = ''
-					for index in range(total_length):
-						#recording when reference and/or read stop being = signs
-						if self.read_start_loc = None:
-							if aligned_read[index] != '=':
-								self.read_start_loc = index
-						if self.ref_start_loc = None:
-							if reference_string[index] != '='
-								self.ref_start_loc = index
-						if self.read_start_loc != None:
-							aligned_read[index]
-
-			self.reads.append(encoded_aligned_read(aligned_read))
 
 
 	def create_gap_penalty(open_penalty=10, extend_penalty = 1): 
@@ -41,7 +12,7 @@ class OpenSeqAlign:
 				return 0
 			return open_penalty + extend_penalty*(length-1)
 		return gap_penalty
-	
+	@staticmethod
 	def nwalign(string1, string2, no_end_gap_penalty = True, match_score = 1, mismatch_score = -1, gap_penalty = create_gap_penalty()):
 		"""Aligns 2 strings, string1 and string2. Default values can be modified by passing in different values.
 		This needleman_wunsch implementation does not penalize gaps at the beginning and ends, by default. 
@@ -174,7 +145,7 @@ class OpenSeqAlign:
 		path_grid = create_path_grid()
 		new_string1, new_string2 = traceback()
 		return new_string1, new_string2
-
+	@staticmethod
 	def heur_nwalign(string1, string2, max_displacement, match_score = 1, mismatch_score = -1, gap_penalty = create_gap_penalty()):
 		def get_indexes(row_number, x_loc): #converts from diagonal matrix to string indexes
 			if (x_loc - max_displacement) < 0:
@@ -318,6 +289,7 @@ class OpenSeqAlign:
 		new_string1, new_string2 = traceback()
 		return new_string1, new_string2
 
+	@staticmethod
 	def swalign(string1, string2, match_score = 3, mismatch_score = -3, gap_penalty = create_gap_penalty()):
 		#strings 1 and 2 are input strings, presumably genomes
 		length1 = len(string1)
