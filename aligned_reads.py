@@ -1,29 +1,4 @@
-class dict_of_counting_dicts():
-	def __init__(self):
-		self.dict = {}
-	def add_term_at_index(self, term, index):
-		if index in self.dict.keys():
-			self.dict[index].add_term(term)
-		else:
 
-
-
-
-class counting_dict():
-	def __init__(self):
-		self.dict = {}
-	def add_term(self, term):
-		if term == '_':
-			pass
-		else if term not in self.dict.keys():
-			self.dict[term] = 1
-		else:
-			self.dict[term] += 1
-	def get_highest(self):
-		max_value = max(self.chars_dict.values())
-		for key in self.chars_dict.keys():
-			if self.chars_dict[key] == max_value:
-				return self.chars_dict[key]		
 """
 class consensus_char(counting_dict):
 	def __init__(self):
@@ -48,11 +23,74 @@ class aligned_reads():
 		self.encoded_reads.append(encoded_read)
 	def get_alignment(self, index):
 		return decode(self.encoded_reads[index], self.ref_seq)
+	def assemble_consensus_read(self):
+		if hasattr(self, cons_read):
+			print("Already created a consensus read for this sample, but redoing and overwriting")
 
+
+		def resolve(self, combined_ins_dicts):
+			#manually handle insertion at front and 0th index together, since each should compare to the 0th index of the encoded read strings
+			
+			first_index_char_dict = counting_dict()
+
+			new_string = ''
+			new_ins_dict = {}
+
+			for encoded_read in self.encoded_reads:
+				first_index_char_dict.add_term(encoded_read.str[0])
+
+			if -1 in combined_ins_dicts.dict:
+				ins_str = combined_ins_dicts.dict[-1].calc_ins(first_index_char_dict.total)
+				if ins_str != None:
+					new_ins_dict[-1] = ins_str
+
+			if 0 in combined_ins_dicts.dict:	
+				ins_str = combined_ins_dicts.dict[0].calc_ins(first_index_char_dict.total)
+				if ins_str != None:
+					new_ins_dict[0] = ins_str
+
+			new_string = new_string + first_index_char_dict.get_highest_key()
+
+
+			for index in range(1, len(self.ref_seq)):
+				cons_char = counting_dict()
+				for encoded_read in self.encoded_reads:
+					cons_char.add_term(encoded_read.str[index])
+				new_string = new_string + cons_char.get_highest_key()
+				ins_str = combined_ins_dicts.dict[index].calc_ins(cons_char.total)
+				if ins_str != None:
+					new_ins_dict[index] = ins_str
+			return new_string, new_ins_dict
+
+
+
+		self.cons_read = encoded_read()
+		combined_ins_dicts = dict_of_counting_dicts(self.encoded_reads)
+		cons_read.str, cons_read.consensus_read = self.resolve(combined_insertion_dicts)
+
+		#at each index
+		"""for index in range(len(self.ref_seq)):
+			#create a consensus char object
+			consensus_char_dict = counting_dict()
+			for encoded_read in aligned_reads.encoded_reads:
+				consensus_char_dict.add_term(encoded_read.str[index])
+			#and then add the highest char to the new encoded read
+			new_encoded_read.str = new_encoded_read.str + consensus_char_dict.get_highest()
+
+		insertions_dict = dict_of_counting_dicts()
+		#for every possible insertion index...
+		for insertion_index in range(-1, len(self.ref_seq)):
+			#iterate through the encoded reads...
+			for encoded_read in aligned_reads.encoded_reads:
+				#if the current examined index is an insertion index for this particular encoded read,
+				if insertion_index in encoded_read.insertion_dict.keys():
+					#add the term to the insertion dict of counting dicts
+					insertions_dict.add_term_at_index(encoded_read[insertion_index], insertion_index)
+"""
 class encoded_read():
 	def __init__(self, aligned_read = None, aligned_ref = None):
 		#separate way to initialize, with blank data, for when building a new encoded read
-		if aligned_read == None or aligned_ref = None:
+		if aligned_read == None or aligned_ref == None:
 			self.str = ''
 			self.insertion_dict = {}
 		else:
@@ -60,7 +98,6 @@ class encoded_read():
 				def transform(aligned_read, aligned_ref):
 					"""Takes a side-by-side alignment and transforms it into just an transformed read, which can be reversed by the translate function. 
 					Gaps in the aligned ref corresponding to insertions in the aligned read become lowercase characters in the transformed read
-
 					"""
 					length = len(aligned_ref)
 					transformed_read = ''
@@ -100,7 +137,7 @@ class encoded_read():
 					return compressed_read, insertion_dict 
 				return compress(transform(aligned_read, aligned_ref))
 			self.str, self.insertion_dict = encode(aligned_read, aligned_ref)
-	def get_alignment(self, ref_string):
+	def get_alignment_to(self, ref_string):
 		def decode(compressed_read, insertion_dict, ref_string):
 			"""Reverses encoding. Decompresses then translates
 			>>> from aligned_reads import *
